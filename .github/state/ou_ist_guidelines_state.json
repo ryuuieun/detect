@@ -1,1 +1,35 @@
-{}
+{
+  "updated_at": "2026-02-22T05:13:53",
+  "urls": [
+    "https://www.ist.osaka-u.ac.jp/japanese/examinees/admission/"
+  ],
+  "target_year": 2027,
+  "seen_keys": [
+    "https://www.ist.osaka-u.ac.jp/japanese/examinees/admission/guidelines2024.php::令和6年度（2024年度）募集要項",
+    "https://www.ist.osaka-u.ac.jp/japanese/examinees/admission/guidelines2025.php::令和7年度（2025年度）募集要項",
+    "https://www.ist.osaka-u.ac.jp/japanese/examinees/admission/guidelines2026.php::令和8年度（2026年度）募集要項"
+  ],
+  "items": [
+    {
+      "url": "https://www.ist.osaka-u.ac.jp/japanese/examinees/admission/guidelines2026.php",
+      "text": "令和8年度（2026年度）募集要項",
+      "years": [
+        2026
+      ]
+    },
+    {
+      "url": "https://www.ist.osaka-u.ac.jp/japanese/examinees/admission/guidelines2025.php",
+      "text": "令和7年度（2025年度）募集要項",
+      "years": [
+        2025
+      ]
+    },
+    {
+      "url": "https://www.ist.osaka-u.ac.jp/japanese/examinees/admission/guidelines2024.php",
+      "text": "令和6年度（2024年度）募集要項",
+      "years": [
+        2024
+      ]
+    }
+  ]
+}
