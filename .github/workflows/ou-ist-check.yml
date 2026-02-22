@@ -1,0 +1,60 @@
+name: OU IST Guidelines Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 00:00 UTC = 09:00 JST
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  check-and-notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run checker
+        id: checker
+        run: |
+          set +e
+          python3 check_ou_ist_guidelines.py \
+            --state .github/state/ou_ist_guidelines_state.json \
+            --print-json > summary.json
+          rc=$?
+          set -e
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          cat summary.json
+
+      - name: Commit updated state
+        run: |
+          if git diff --quiet -- .github/state/ou_ist_guidelines_state.json; then
+            echo "No state changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/state/ou_ist_guidelines_state.json
+          git commit -m "chore: update OU IST check state"
+          git push
+
+      - name: Notify (Telegram)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 notify_ou_ist.py --summary-file summary.json
+
+      - name: Fail job on checker error
+        if: steps.checker.outputs.rc == '1'
+        run: |
+          echo "Checker failed: fetch error and no items."
+          exit 1
