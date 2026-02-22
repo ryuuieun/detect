@@ -51,6 +51,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          HEARTBEAT_NOTIFY: "1"
         run: python3 notify_ou_ist.py --summary-file summary.json
 
       - name: Fail job on checker error

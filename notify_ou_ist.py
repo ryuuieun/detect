@@ -7,6 +7,7 @@ import os
 import sys
 import urllib.parse
 import urllib.request
+from datetime import datetime, timezone
 
 
 def send_telegram(bot_token: str, chat_id: str, text: str) -> None:
@@ -40,6 +41,13 @@ def build_message(summary: dict) -> str:
     return "\n".join(lines)
 
 
+def env_flag(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--summary-file", required=True, help="Path to checker JSON summary")
@@ -48,12 +56,16 @@ def main() -> int:
     summary = json.loads(open(args.summary_file, "r", encoding="utf-8").read())
     detected = bool(summary.get("detected", False))
     errors = summary.get("fetch_errors", [])
-    should_notify = detected or bool(errors)
+    heartbeat = env_flag("HEARTBEAT_NOTIFY", default=True)
+    should_notify = detected or bool(errors) or heartbeat
     if not should_notify:
         print("No notification needed.")
         return 0
 
     message = build_message(summary)
+    if heartbeat and not detected and not errors:
+        ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+        message = f"{message}\n- heartbeat: workflow is running ({ts})"
 
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
     chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip()

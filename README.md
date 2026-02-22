@@ -103,6 +103,7 @@ export OU_IST_WEBHOOK_URL='https://example.com/your-webhook'
 - 在以下情况发送通知：
   - 检测到目标年度募集要項
   - 抓取失败（fetch error）
+  - 心跳消息（无更新时也会每日发送一次）
 
 ### 需要配置的 Secrets
 
@@ -110,6 +111,12 @@ Telegram（必需）：
 
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
+
+可选环境变量（在 workflow 中）：
+
+- `HEARTBEAT_NOTIFY`
+  - `1`（默认）：无更新时也发送心跳
+  - `0`：仅在“检测到更新/抓取失败”时通知
 
 ### Telegram 参数获取
 
