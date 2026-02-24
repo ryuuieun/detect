@@ -91,6 +91,11 @@ export OU_IST_WEBHOOK_URL='https://example.com/your-webhook'
 
 - `/Users/ryuuieun/codex/.github/state/ou_ist_guidelines_state.json`
 
+状态文件提交策略：
+
+- 自动提交到 `state` 分支（不再提交到 `main`）
+- 这样不会干扰你在 `main` 的日常开发和 `git push`
+
 通知脚本：
 
 - `/Users/ryuuieun/codex/notify_ou_ist.py`

@@ -23,6 +23,16 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Load state from state branch
+        run: |
+          mkdir -p .github/state
+          if git ls-remote --exit-code --heads origin state >/dev/null 2>&1; then
+            git fetch --depth=1 origin state
+            git show origin/state:.github/state/ou_ist_guidelines_state.json > .github/state/ou_ist_guidelines_state.json || echo "{}" > .github/state/ou_ist_guidelines_state.json
+          else
+            echo "{}" > .github/state/ou_ist_guidelines_state.json
+          fi
+
       - name: Run checker
         id: checker
         run: |
@@ -35,17 +45,44 @@ jobs:
           echo "rc=$rc" >> "$GITHUB_OUTPUT"
           cat summary.json
 
-      - name: Commit updated state
+      - name: Commit updated state to state branch
         run: |
           if git diff --quiet -- .github/state/ou_ist_guidelines_state.json; then
-            echo "No state changes."
+            echo "No state changes in workspace copy."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          tmpdir="$(mktemp -d)"
+          git worktree add "$tmpdir" --detach
+          cd "$tmpdir"
+
+          if git ls-remote --exit-code --heads origin state >/dev/null 2>&1; then
+            git checkout -B state origin/state
+          else
+            git checkout --orphan state
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
+
+          mkdir -p .github/state
+          cp "$GITHUB_WORKSPACE/.github/state/ou_ist_guidelines_state.json" .github/state/ou_ist_guidelines_state.json
           git add .github/state/ou_ist_guidelines_state.json
+
+          if git diff --cached --quiet; then
+            echo "No state changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore: update OU IST check state"
-          git push
+          git push origin state
+
+      - name: Cleanup state worktree
+        if: always()
+        run: |
+          git worktree prune || true
 
       - name: Notify (Telegram)
         continue-on-error: true
