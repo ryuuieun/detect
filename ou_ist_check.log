@@ -1,0 +1,12 @@
+[2026-02-22 12:49:44] exit=1 target_year=2027
+{
+  "detected": false,
+  "first_run": false,
+  "target_year": 2027,
+  "target_year_hits": [],
+  "new_items": [],
+  "fetch_errors": [
+    "https://www.ist.osaka-u.ac.jp/japanese/examinees/admission/: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
+  ]
+}
+

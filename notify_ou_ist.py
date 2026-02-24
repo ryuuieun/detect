@@ -4,19 +4,45 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import time
 import sys
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
+from urllib.error import URLError
 
 
-def send_telegram(bot_token: str, chat_id: str, text: str) -> None:
+def send_telegram(
+    bot_token: str,
+    chat_id: str,
+    text: str,
+    timeout: float = 20.0,
+    retries: int = 3,
+    backoff_seconds: float = 2.0,
+) -> None:
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
     payload = urllib.parse.urlencode({"chat_id": chat_id, "text": text}).encode("utf-8")
-    req = urllib.request.Request(url, data=payload, method="POST")
-    with urllib.request.urlopen(req, timeout=20) as resp:
-        if resp.status != 200:
-            raise RuntimeError(f"telegram send failed with status {resp.status}")
+    last_error: Exception | None = None
+
+    for attempt in range(1, retries + 1):
+        try:
+            req = urllib.request.Request(url, data=payload, method="POST")
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                if resp.status != 200:
+                    raise RuntimeError(f"telegram send failed with status {resp.status}")
+            return
+        except (TimeoutError, URLError, RuntimeError) as exc:
+            last_error = exc
+            if attempt == retries:
+                break
+            wait_seconds = backoff_seconds * (2 ** (attempt - 1))
+            print(
+                f"Telegram notify attempt {attempt}/{retries} failed: {exc}. "
+                f"Retrying in {wait_seconds:.1f}s..."
+            )
+            time.sleep(wait_seconds)
+
+    raise RuntimeError(f"telegram send failed after {retries} attempts: {last_error}")
 
 
 def build_message(summary: dict) -> str:
@@ -51,6 +77,8 @@ def env_flag(name: str, default: bool = False) -> bool:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--summary-file", required=True, help="Path to checker JSON summary")
+    parser.add_argument("--telegram-timeout", type=float, default=20.0)
+    parser.add_argument("--telegram-retries", type=int, default=3)
     args = parser.parse_args()
 
     summary = json.loads(open(args.summary_file, "r", encoding="utf-8").read())
@@ -73,9 +101,19 @@ def main() -> int:
         print("Telegram not configured. Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID.")
         return 1
 
-    send_telegram(bot_token, chat_id, message)
-    print("Sent Telegram notification.")
-    return 0
+    try:
+        send_telegram(
+            bot_token,
+            chat_id,
+            message,
+            timeout=args.telegram_timeout,
+            retries=args.telegram_retries,
+        )
+        print("Sent Telegram notification.")
+        return 0
+    except Exception as exc:
+        print(f"Telegram notification failed: {exc}")
+        return 1
 
 
 if __name__ == "__main__":

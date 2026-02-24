@@ -104,6 +104,7 @@ export OU_IST_WEBHOOK_URL='https://example.com/your-webhook'
   - 检测到目标年度募集要項
   - 抓取失败（fetch error）
   - 心跳消息（无更新时也会每日发送一次）
+- Telegram 发送采用重试机制（默认 3 次），且通知失败不会使主检查任务失败
 
 ### 需要配置的 Secrets
 
