@@ -34,7 +34,7 @@ python3 /Users/ryuuieun/codex/check_ou_ist_guidelines.py --print-json
 - `2`: 检测到疑似新发布（目标年度命中或新增条目）
 - `1`: 抓取失败且没有可用结果
 
-## 定时任务示例（每天 09:00）
+## 定时任务示例（每天 08:00）
 
 ```bash
 0 9 * * * /usr/bin/python3 /Users/ryuuieun/codex/check_ou_ist_guidelines.py --target-year 2027 >> /tmp/ou_ist_check.log 2>&1
@@ -102,7 +102,7 @@ export OU_IST_WEBHOOK_URL='https://example.com/your-webhook'
 
 ### 行为说明
 
-- 每天 `09:00 JST` 定时运行（`00:00 UTC`）
+- 每天 `08:00 JST` 定时运行（`23:00 UTC`）
 - 抓取页面并输出 `summary.json`
 - 自动更新状态文件并提交回仓库（保证后续“新增检测”有效）
 - 在以下情况发送通知：

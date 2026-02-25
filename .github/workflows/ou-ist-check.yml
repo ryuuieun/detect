@@ -3,8 +3,8 @@ name: OU IST Guidelines Check
 on:
   workflow_dispatch:
   schedule:
-    # 00:00 UTC = 09:00 JST
-    - cron: "0 0 * * *"
+    # 23:00 UTC = 08:00 JST
+    - cron: "0 23 * * *"
 
 permissions:
   contents: write
